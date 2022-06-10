@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">KiwiTask</string>
+    <string name="flight_offers">Flight Offers</string>
+    <string name="error_title">Error</string>
+
+<!--    main activity-->
+    <string name="main_activity_title">Flights</string>
+    <string name="filter_icon_content_description">Filter Flights</string>
+    <string name="flight_duration">Flight Duration</string>
+    <string name="no_flights_found">No flights found :(</string>
+<!--    filter activity-->
+    <string name="search_destinations">Search destinations</string>
+    <string name="search_flights">Search Flights</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="no_selection_error">Cannot apply search without selecting at least one destination.</string>
+<!--    favorites activity-->
+    <string name="no_favorites">You have no favorites!</string>
+    <string name="no_favorites_found">No favorite destinations found!</string>
+
+<!--    FlightViewModel-->
+    <string name="network_timeout_message">Timeout error. Please check your internet connection and try again.</string>
+    <string name="generic_error_message">An error has occurred. Please try again later.</string>
+
+</resources>
