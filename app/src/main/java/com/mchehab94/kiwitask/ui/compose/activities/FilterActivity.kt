@@ -6,7 +6,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
@@ -33,6 +37,9 @@ import com.mchehab94.kiwitask.model.SelectedCityFilter
 import com.mchehab94.kiwitask.ui.theme.KiwiTaskTheme
 import com.mchehab94.kiwitask.viewmodel.FilterViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -41,6 +48,7 @@ class FilterActivity : ComponentActivity() {
     private val filterViewModel by viewModels<FilterViewModel>()
 
     val selectedCities = mutableStateListOf<City>()
+    var didAdd = true
 
     val dropDownOptions = mutableStateListOf<City>()
     val textFieldValue = mutableStateOf(TextFieldValue())
@@ -77,7 +85,9 @@ class FilterActivity : ComponentActivity() {
             label = stringResource(id = R.string.search_destinations),
             onItemClick = { city ->
                 if (!selectedCities.contains(city)) {
+                    city.isVisible = true
                     selectedCities.add(city)
+                    didAdd = true
                 }
             }
         )
@@ -130,34 +140,50 @@ class FilterActivity : ComponentActivity() {
             mainAxisAlignment = MainAxisAlignment.Center,
             crossAxisSpacing = 8.dp
         ) {
-            selectedCities.forEach { city ->
-                Surface(
-                    elevation = 4.dp,
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(
-                        width = 1.dp,
-                        colorResource(id = R.color.kiwi_green)
+            selectedCities.forEachIndexed { index, city ->
+                val transitionState = if (didAdd && index == selectedCities.size - 1) {
+                    MutableTransitionState(false)
+                } else {
+//                    no transition needed
+                    MutableTransitionState(true)
+                }
+                AnimatedVisibility(
+                    visibleState = transitionState.apply { targetState = true }, enter = fadeIn(
+                        animationSpec = TweenSpec(200, 0, FastOutLinearInEasing)
+                    ), exit = fadeOut(
+                        animationSpec = TweenSpec(100, 0, FastOutLinearInEasing)
                     )
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        elevation = 4.dp,
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            colorResource(id = R.color.kiwi_green)
+                        )
                     ) {
-                        Text(text = city.cityName)
-                        IconButton(
-                            modifier = Modifier.size(12.dp, 12.dp),
-                            onClick = {
-                                selectedCities.filter { it.cityId == city.cityId }
-                                    .forEach { selectedCities.remove(it) }
-                            }) {
-                            Icon(
-                                painterResource(id = R.drawable.ic_close),
-                                contentDescription = "",
-                                Modifier.size(width = 12.dp, height = 12.dp)
-                            )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            rememberCoroutineScope()
+                            Text(text = city.cityName)
+                            IconButton(
+                                modifier = Modifier.size(12.dp, 12.dp),
+                                onClick = {
+                                    didAdd = false
+                                    selectedCities.filter { it.cityId == city.cityId }
+                                        .forEach { selectedCities.remove(it) }
+                                }) {
+                                Icon(
+                                    painterResource(id = R.drawable.ic_close),
+                                    contentDescription = "",
+                                    Modifier.size(width = 12.dp, height = 12.dp)
+                                )
+                            }
                         }
                     }
                 }
