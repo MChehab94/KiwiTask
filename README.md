@@ -1,6 +1,6 @@
 ## Overview
 
-A simple application that retrieves five random flights from (ENDPOINT) and display the results in a
+A simple application that retrieves five random flights from https://api.skypicker.com/flights endpoint and display the results in a
 ViewPager. The user can 'like' a particular destination and it will be added to favorites, in which
 the user can view a list of favorite destinations.
 
