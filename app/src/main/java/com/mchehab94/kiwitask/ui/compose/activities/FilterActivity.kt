@@ -33,13 +33,9 @@ import com.google.accompanist.flowlayout.MainAxisAlignment
 import com.mchehab94.kiwitask.R
 import com.mchehab94.kiwitask.ui.compose.components.TextFieldWithDropdown
 import com.mchehab94.kiwitask.database.entities.City
-import com.mchehab94.kiwitask.model.SelectedCityFilter
 import com.mchehab94.kiwitask.ui.theme.KiwiTaskTheme
 import com.mchehab94.kiwitask.viewmodel.FilterViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -47,8 +43,7 @@ class FilterActivity : ComponentActivity() {
 
     private val filterViewModel by viewModels<FilterViewModel>()
 
-    val selectedCities = mutableStateListOf<City>()
-    var didAdd = true
+    var selectedCities = mutableStateListOf<City>()
 
     val dropDownOptions = mutableStateListOf<City>()
     val textFieldValue = mutableStateOf(TextFieldValue())
@@ -83,18 +78,12 @@ class FilterActivity : ComponentActivity() {
             dropDownExpanded = dropDownExpanded.value,
             list = dropDownOptions,
             label = stringResource(id = R.string.search_destinations),
-            onItemClick = { city ->
-                if (!selectedCities.contains(city)) {
-                    city.isVisible = true
-                    selectedCities.add(city)
-                    didAdd = true
-                }
-            }
+            onItemClick = { city -> filterViewModel.addCity(city) }
         )
     }
 
     fun canApplySearch(): Boolean {
-        return selectedCities.size > 0
+        return filterViewModel.canApplySearch()
     }
 
     fun applySearch(context: Activity?) {
@@ -103,10 +92,7 @@ class FilterActivity : ComponentActivity() {
             return
         }
         val intent = Intent()
-        val cities = ArrayList<SelectedCityFilter>()
-        selectedCities.forEach {
-            cities.add(SelectedCityFilter(it.cityName, it.countryCode))
-        }
+        val cities = filterViewModel.getSelectedCities()
         intent.putParcelableArrayListExtra("cities", cities)
         context?.setResult(Activity.RESULT_OK, intent)
         context?.finish()
@@ -141,7 +127,7 @@ class FilterActivity : ComponentActivity() {
             crossAxisSpacing = 8.dp
         ) {
             selectedCities.forEachIndexed { index, city ->
-                val transitionState = if (didAdd && index == selectedCities.size - 1) {
+                val transitionState = if (filterViewModel.didAdd && index == selectedCities.size - 1) {
                     MutableTransitionState(false)
                 } else {
 //                    no transition needed
@@ -173,11 +159,7 @@ class FilterActivity : ComponentActivity() {
                             Text(text = city.cityName)
                             IconButton(
                                 modifier = Modifier.size(12.dp, 12.dp),
-                                onClick = {
-                                    didAdd = false
-                                    selectedCities.filter { it.cityId == city.cityId }
-                                        .forEach { selectedCities.remove(it) }
-                                }) {
+                                onClick = { filterViewModel.removeCity(city) }) {
                                 Icon(
                                     painterResource(id = R.drawable.ic_close),
                                     contentDescription = "",
@@ -250,6 +232,11 @@ class FilterActivity : ComponentActivity() {
             dropDownOptions.clear()
             dropDownOptions.addAll(it)
             dropDownExpanded.value = true
+        }
+
+        filterViewModel.selectedCities.observe(this) {
+            selectedCities.clear()
+            selectedCities.addAll(it)
         }
 
         setContent {
