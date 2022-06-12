@@ -35,7 +35,7 @@ The project is divided into the following modules:
 
 ### Database
 #### Structure
-The data is represented in a JSON file and has the following structure:
+The data was generated using is a simple python script from this [repo](https://github.com/MChehab94/CountriesCitiesAirports) and has the followings structure:
 ```json
 [
     {
@@ -58,7 +58,7 @@ The data is represented in a JSON file and has the following structure:
     }
 ]
 ```
-The data is  a tree-like structure, in which we have an array of countries. Each country has an array of cities, and each city has an array of airports.
+We have a tree-like structure, in which we have an array of countries. Each country has an array of cities, and each city has an array of airports.
 From this data, we can easily derive three entities:
 - Country
 - City
@@ -71,8 +71,8 @@ history of requests/destinations.
 ### Network
 `Retrofit` is used in order to perform API requests along with `GSON` in order to convert the responses into Kotlin data class.
 The `FlightApiService` contains  two methods:
-- getFlights: Call<FlightResponse>
-- getLocations: Response<LocationResponse>
+- `getFlights: Call<FlightResponse>`
+- `getLocations: Response<LocationResponse>`
 
 #### Get FLIGHTS
 A request is sent at `/flights` endpoint in order to retrieve relevant flights, were the following parameters are used:
