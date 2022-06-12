@@ -45,19 +45,19 @@ class FilterActivity : ComponentActivity() {
 
     var selectedCities = mutableStateListOf<City>()
 
-    val dropDownOptions = mutableStateListOf<City>()
-    val textFieldValue = mutableStateOf(TextFieldValue())
-    val dropDownExpanded = mutableStateOf(false)
+    private val dropDownOptions = mutableStateListOf<City>()
+    private val textFieldValue = mutableStateOf(TextFieldValue())
+    private val dropDownExpanded = mutableStateOf(false)
 
-    val showErrorDialog = mutableStateOf(false)
+    private val showErrorDialog = mutableStateOf(false)
 
-    fun onDropdownDismissRequest() {
+    private fun onDropdownDismissRequest() {
         dropDownExpanded.value = false
     }
 
     @ExperimentalComposeUiApi
     @Composable
-    fun TextFieldWithDropdownUsage() {
+    private fun TextFieldWithDropdownUsage() {
         val context = LocalContext.current as? Activity
         val setValue: (tfv: TextFieldValue) -> Unit = {
             dropDownExpanded.value = true
@@ -82,11 +82,11 @@ class FilterActivity : ComponentActivity() {
         )
     }
 
-    fun canApplySearch(): Boolean {
+    private fun canApplySearch(): Boolean {
         return filterViewModel.canApplySearch()
     }
 
-    fun applySearch(context: Activity?) {
+    private fun applySearch(context: Activity?) {
         if (!canApplySearch()) {
             showErrorDialog.value = true
             return
@@ -99,7 +99,7 @@ class FilterActivity : ComponentActivity() {
     }
 
     @Composable
-    fun FilterToolbar() {
+    private fun FilterToolbar() {
         val context = LocalContext.current as? Activity
         TopAppBar(title = {
             Row(
@@ -121,7 +121,7 @@ class FilterActivity : ComponentActivity() {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    fun RowChips() {
+    private fun RowChips() {
         FlowRow(
             mainAxisAlignment = MainAxisAlignment.Center,
             crossAxisSpacing = 8.dp
@@ -175,7 +175,7 @@ class FilterActivity : ComponentActivity() {
 
     @ExperimentalComposeUiApi
     @Composable
-    fun FilterScreen() {
+    private fun FilterScreen() {
         KiwiTaskTheme {
             Scaffold(
                 topBar = { FilterToolbar() },
@@ -207,7 +207,7 @@ class FilterActivity : ComponentActivity() {
     }
 
     @Composable
-    fun DisplayErrorDialog(
+    private fun DisplayErrorDialog(
         title: String,
         message: String,
         buttonCallback: () -> Unit
