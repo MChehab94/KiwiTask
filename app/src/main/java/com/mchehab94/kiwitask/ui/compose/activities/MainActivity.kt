@@ -9,7 +9,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -37,6 +36,7 @@ import com.mchehab94.kiwitask.ui.theme.KiwiTaskTheme
 import com.mchehab94.kiwitask.utils.Utils
 import com.mchehab94.kiwitask.viewmodel.FlightViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
@@ -251,17 +251,50 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @Composable
+    private fun DisplaySnackbar(scaffoldState: ScaffoldState, scope: CoroutineScope) {
+        val snackBarMessage = remember { mutableStateOf("") }
+        LaunchedEffect(true) {
+            flightViewModel.showSnackBar.collect {
+                when (it) {
+                    is FlightViewModel.ShowSnackBar.AddedFlightToFavorite ->
+                        snackBarMessage.value = "${it.flight.cityTo} has been added to favorites"
+                    is FlightViewModel.ShowSnackBar.RemovedFlightFromFavorite ->
+                        snackBarMessage.value = "${it.flight.cityTo} has been removed from favorites"
+                }
+                scope.launch {
+//                    dismiss if one is already displayed
+                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                    val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
+                        message = snackBarMessage.value,
+                        actionLabel = getString(R.string.snackbar_undo_action),
+                        duration = SnackbarDuration.Short
+                    )
+                    when (snackbarResult) {
+                        SnackbarResult.ActionPerformed -> flightViewModel.onFavoriteClick(it.flight)
+                        else -> {
+                            /*Dismissed, no need to do anything*/
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @ExperimentalPagerApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val pagerState = rememberPagerState()
-
             KiwiTaskTheme {
+                val scaffoldState = rememberScaffoldState()
+                val coroutineScope = rememberCoroutineScope()
 
                 observeResponse(pagerState)
                 observeErrorMessage()
                 observeRefresh()
+
+                DisplaySnackbar(scaffoldState = scaffoldState, scope = coroutineScope)
 
                 rememberNavController()
                 Scaffold(
@@ -270,6 +303,7 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         Toolbar()
                     },
+                    scaffoldState = scaffoldState,
                     content = { padding ->
                         SwipeRefresh(
                             state = rememberSwipeRefreshState(flightViewModel.isNetworkRunning.value),

@@ -8,6 +8,7 @@
     <string name="filter_icon_content_description">Filter Flights</string>
     <string name="flight_duration">Flight Duration</string>
     <string name="no_flights_found">No flights found :(</string>
+    <string name="snackbar_undo_action">Undo</string>
 <!--    filter activity-->
     <string name="search_destinations">Search destinations</string>
     <string name="search_flights">Search Flights</string>

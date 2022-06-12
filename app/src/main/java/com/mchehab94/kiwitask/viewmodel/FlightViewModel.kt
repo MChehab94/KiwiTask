@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.mchehab94.kiwitask.R
 import com.mchehab94.kiwitask.database.dao.AirportDao
 import com.mchehab94.kiwitask.database.dao.CityDao
 import com.mchehab94.kiwitask.database.dao.FlightDao
@@ -40,6 +41,9 @@ class FlightViewModel @Inject constructor(
 
     private val locationResponse = MutableLiveData<LocationResponse>()
     fun getLocation() = locationResponse
+
+    private val _showSnackBar = MutableSharedFlow<ShowSnackBar>()
+    val showSnackBar = _showSnackBar.asSharedFlow()
 
     /**
      * Called whenever an API request is performed. [emit] is called once the [remainingTime] reaches 0, indicating
@@ -197,8 +201,10 @@ class FlightViewModel @Inject constructor(
         viewModelScope.launch {
             if (isFavorite) {
                 flightDao.addToFavorites(flight.flightId)
+                _showSnackBar.emit(ShowSnackBar.AddedFlightToFavorite(flight))
             } else {
                 flightDao.removeFromFavorite(flight.flightId)
+                _showSnackBar.emit(ShowSnackBar.RemovedFlightFromFavorite(flight))
             }
         }
     }
@@ -212,5 +218,10 @@ class FlightViewModel @Inject constructor(
      */
     enum class ResponseStatus {
         GenericError, NetworkTimeout, NoFlightsFound, NoError
+    }
+
+    sealed class ShowSnackBar(val flight: Flight) {
+        data class AddedFlightToFavorite(val f: Flight) : ShowSnackBar(f)
+        data class RemovedFlightFromFavorite(val f: Flight) : ShowSnackBar(f)
     }
 }
